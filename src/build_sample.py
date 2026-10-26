@@ -34,13 +34,31 @@ def format_context(passages):
 inc = load_jsonl("data/raw/inconsistent_test.jsonl")
 una = load_jsonl("data/raw/unanswerable_test.jsonl")
 
+def dedupe(items):
+    """Keep the first item for each normalised question text."""
+    seen, kept = set(), []
+    for item in items:
+        key = normalise(item["question"])
+        if key not in seen:
+            seen.add(key)
+            kept.append(item)
+    return kept
+
+inc_dedup = dedupe(inc)
+una_dedup = dedupe(una)
+print(f"Dedup: inconsistent {len(inc)} -> {len(inc_dedup)}, unanswerable {len(una)} -> {len(una_dedup)}")
+
 inc_by_subset = defaultdict(list)
-for item in inc:
+for item in inc_dedup:
     inc_by_subset[item["subset"]].append(item)
 una_by_subset = defaultdict(list)
-for item in una:
+for item in una_dedup:
     una_by_subset[item["subset"]].append(item)
 
+for subset in sorted(inc_by_subset):
+    n = len(inc_by_subset[subset])
+    flag = "  <-- LOW (need >= 110)" if n < 2 * PER_SUBSET + 10 else ""
+    print(f"  {subset}: inconsistent pool {n}, unanswerable pool {len(una_by_subset[subset])}{flag}")
 sample = []
 rejected_distractors = 0
 
@@ -138,3 +156,4 @@ print("\nExample control item:")
 ex = next(r for r in sample if r["condition"] == "control")
 print("Q:", ex["question"], "| Gold:", ex["gold_answers"])
 print(ex["context"][:700])
+
