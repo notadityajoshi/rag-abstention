@@ -91,9 +91,15 @@ for subset in sorted(inc_by_subset):
             "distractor_qid": distractor_qid,
         })
 
-    # Unanswerable: single passage
-    u_items = una_by_subset[subset][:]
+    # Unanswerable: single passage, excluding questions already used
+    used_qids = {i["qid"] for i in group_a + group_b}
+    used_questions = {normalise(i["question"]) for i in group_a + group_b}
+    u_items = [i for i in una_by_subset[subset]
+               if i["qid"] not in used_qids
+               and normalise(i["question"]) not in used_questions]
     random.shuffle(u_items)
+    if len(u_items) < PER_SUBSET:
+        print(f"WARNING: {subset} has only {len(u_items)} unused unanswerable items")
     for item in u_items[:PER_SUBSET]:
         passages = [item["context"].strip()]
         sample.append({
@@ -123,6 +129,8 @@ print("By condition:", dict(Counter(r["condition"] for r in sample)))
 print("Distractors rejected for containing gold answer:", rejected_distractors)
 print("Duplicate source questions across conditions:",
       len(sample) - len({r["source_qid"] for r in sample}))
+print("Duplicate question texts across sample:",
+      len(sample) - len({normalise(r["question"]) for r in sample}))
 print("Controls missing a distractor:",
       sum(1 for r in sample if r["condition"] == "control" and r["passages"][1] is None))
 
