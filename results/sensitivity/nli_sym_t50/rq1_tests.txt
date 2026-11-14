@@ -1,0 +1,24 @@
+=== RQ1: does contradiction add information beyond confidence + sufficiency? ===
+AUROC C4 - C2 = +0.1363  95% CI [+0.1135, +0.1587]
+AURC  C2 - C4 = +0.0818  95% CI [+0.0653, +0.0971]  (positive = C4 better)
+Likelihood-ratio test C2 vs C4: LR = 276.41, df = 1, p = 4.554e-62
+C4 coefficients:
+const           -1.047
+confidence       1.494
+sufficiency     -0.002
+contradiction   -2.895
+
+=== Robustness: does contradiction help BEYOND knowing the condition? ===
+Likelihood-ratio test R1 vs R2: LR = 2.39, df = 1, p = 0.1225
+R2 coefficients:
+const            4.664
+cond_inc        -6.646
+cond_una        -4.093
+confidence      -0.826
+sufficiency     -1.567
+contradiction   -0.618
+
+=== McNemar: wrong answers at fixed coverage, C2 vs C4 ===
+  coverage 75%: wrong C2=591, C4=511 | discordant 208 vs 128 | p = 1.498e-05
+  coverage 50%: wrong C2=375, C4=293 | discordant 150 vs 68 | p = 2.852e-08
+  coverage 25%: wrong C2=171, C4=133 | discordant 76 vs 38 | p = 0.0004752

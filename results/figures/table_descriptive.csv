@@ -1,0 +1,4 @@
+condition,n,correct,committed,sufficiency_1,confidence_mean,nli_flag_rate
+control,500,0.92,1.0,0.88,0.884166,0.098
+inconsistent,500,0.02,0.98,0.74,0.80406,0.658
+unanswerable,500,0.378,0.622,0.316,0.7801,0.074

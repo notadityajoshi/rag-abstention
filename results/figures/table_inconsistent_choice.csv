@@ -1,0 +1,6 @@
+model behaviour,n,share
+original passage answer,266,0.532
+edited passage answer,140,0.28
+neither (paraphrase / other),63,0.126
+both answers mentioned,21,0.042
+abstained / flagged conflict,10,0.02

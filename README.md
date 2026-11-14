@@ -1,4 +1,3 @@
-
 # Conflict-Aware Abstention in Retrieval-Augmented Generation
 
 MSc Artificial Intelligence and Human Factors, Coventry University
@@ -33,14 +32,24 @@ src/
   label_sufficiency.py    # blind manual sufficiency labelling (50 items)
   llm_signals.py          # answers, P(Correct), sufficiency autorater, judges (API)
   validate_autorater.py   # autorater vs manual labels (accuracy, Cohen's kappa)
-  analysis.py             # AUROC, AURC, LR tests, McNemar, bootstrap CIs, plots
+  label_judge.py          # blind manual grading of 50 model answers
+  validate_judge.py       # LLM judge vs manual grading (accuracy, Cohen's kappa)
+  analysis.py             # AUROC, AURC, LR tests, McNemar, bootstrap CIs, per-condition/subset, plots
+  report_figures.py       # descriptive figures and tables for the report
+tests/
+  test_parsers.py         # unit tests: LLM output parsing, prompt rules
+  test_data_integrity.py  # sample balance, no leakage, signal completeness
+  test_analysis_smoke.py  # end-to-end analysis run on simulated labels
 data/
-  labels/sufficiency_manual.jsonl   # author's 50 blind manual labels
+  labels/sufficiency_manual.jsonl   # author's 50 blind manual sufficiency labels
+  labels/judge_manual.jsonl         # author's 50 blind manual grading labels
   raw/, processed/                  # generated locally, not committed (see Data)
 docs/
   labelling_guide.md                # sufficiency labelling rules
 results/
   final/                            # frozen results: metrics, tests, plot, item-level table
+  sensitivity/                      # same analysis at NLI thresholds 0.2 / 0.4 / 0.5
+  figures/                          # report figures and descriptive tables
 requirements.txt
 .env.example
 ```
@@ -73,8 +82,21 @@ python src/nli_signal.py                 # full NLI run, ~10 min (resumable)
 python src/llm_signals.py --pilot        # 30-item API pilot
 python src/llm_signals.py                # full API run, ~45 min (resumable)
 python src/validate_autorater.py         # autorater vs manual labels
+python src/label_judge.py                # manual grading of 50 answers (interactive)
+python src/validate_judge.py             # LLM judge vs manual grading
 python src/analysis.py                   # writes results/final/
+for k in nli_sym_t20 nli_sym_t40 nli_sym_t50; do python src/analysis.py --nli-key $k; done
+python src/report_figures.py             # writes results/figures/
 ```
+
+## Testing
+
+```bash
+python -m pytest tests/ -v
+```
+- `test_parsers.py`: parsing of every LLM output type, and a check that the generator prompt contains no "unknown"/"conflict" instruction.
+- `test_data_integrity.py`: 500 items per condition, no duplicate IDs or questions, correct passage structure, no gold answer in control distractors, complete NLI and LLM signals (skipped until the data exist).
+- `test_analysis_smoke.py`: the full analysis runs on simulated labels and writes valid outputs.
 
 To test the analysis code without any API calls (fake labels, written to `results/simulated/`):
 

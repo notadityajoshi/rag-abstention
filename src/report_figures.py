@@ -54,7 +54,7 @@ plt.close()
 
 # ---------- Fig 2: confidence by condition and correctness ----------
 plt.figure(figsize=(7, 4))
-pos, labels, boxes = 1, [], []
+labels, boxes = [], []
 for c in CONDS:
     for corr in (1, 0):
         v = sig.loc[(sig.condition == c) & (sig.correct == corr), "confidence"].dropna().to_numpy()
@@ -93,12 +93,12 @@ rows = []
 for path in ["results/final/metrics.csv"] + sorted(glob.glob("results/sensitivity/*/metrics.csv")):
     key = "nli_sym_t30 (primary)" if "final" in path else path.split("/")[-2]
     m = pd.read_csv(path).set_index("config")
-        auc2 = float(m.loc["C2_conf_suff", "auroc"])
-    auc4 = float(m.loc["C4_conf_suff_nli", "auroc"])
+    auroc = {cfg: float(v) for cfg, v in m["auroc"].items()}
+    aurc = {cfg: float(v) for cfg, v in m["aurc"].items()}
     rows.append({"nli_key": key,
-                 "AUROC_C2": auc2, "AUROC_C4": auc4, "AUROC_C4_minus_C2": auc4 - auc2,
-                 "AURC_C2": float(m.loc["C2_conf_suff", "aurc"]),
-                 "AURC_C4": float(m.loc["C4_conf_suff_nli", "aurc"])})
+                 "AUROC_C2": auroc["C2_conf_suff"], "AUROC_C4": auroc["C4_conf_suff_nli"],
+                 "AUROC_C4_minus_C2": auroc["C4_conf_suff_nli"] - auroc["C2_conf_suff"],
+                 "AURC_C2": aurc["C2_conf_suff"], "AURC_C4": aurc["C4_conf_suff_nli"]})
 sens = pd.DataFrame(rows)
 sens.to_csv(f"{OUT}/table_sensitivity.csv", index=False)
 print("=== NLI threshold sensitivity ===")
