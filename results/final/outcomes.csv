@@ -1,0 +1,19 @@
+coverage,outcome,C2,C4
+0.75,"answer shown, correct",421,424
+0.75,"answer shown, WRONG",591,518
+0.75,"generator abstained, passed through",113,183
+0.75,"gate abstained, blocked a wrong answer",250,323
+0.75,"gate abstained, lost a correct answer",39,36
+0.75,"gate abstained, generator had abstained",86,16
+0.5,"answer shown, correct",300,366
+0.5,"answer shown, WRONG",375,306
+0.5,"generator abstained, passed through",75,78
+0.5,"gate abstained, blocked a wrong answer",466,535
+0.5,"gate abstained, lost a correct answer",160,94
+0.5,"gate abstained, generator had abstained",124,121
+0.25,"answer shown, correct",161,232
+0.25,"answer shown, WRONG",171,127
+0.25,"generator abstained, passed through",43,16
+0.25,"gate abstained, blocked a wrong answer",670,714
+0.25,"gate abstained, lost a correct answer",299,228
+0.25,"gate abstained, generator had abstained",156,183
