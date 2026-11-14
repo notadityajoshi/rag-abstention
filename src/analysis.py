@@ -12,7 +12,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 
-NLI_KEY = "nli_sym_t30"          # primary threshold, frozen on pilot
+PRIMARY_NLI_KEY = "nli_sym_t30"  # primary threshold, frozen on pilot
 COVERAGES = [0.75, 0.50, 0.25]
 N_BOOT = 2000
 SEED = 42
@@ -32,8 +32,17 @@ MAIN = ["C1_conf", "C2_conf_suff", "C3_conf_nli", "C4_conf_suff_nli"]
 parser = argparse.ArgumentParser()
 parser.add_argument("--simulate", action="store_true",
                     help="FAKE confidence/sufficiency/correct labels to test the code")
+parser.add_argument("--nli-key", default=PRIMARY_NLI_KEY,
+                    help="NLI threshold column for sensitivity analysis, e.g. nli_sym_t40")
 args = parser.parse_args()
-OUT = "results/simulated" if args.simulate else "results/final"
+NLI_KEY = args.nli_key
+if args.simulate:
+    OUT = "results/simulated"
+elif NLI_KEY == PRIMARY_NLI_KEY:
+    OUT = "results/final"
+else:
+    OUT = f"results/sensitivity/{NLI_KEY}"
+print(f"NLI signal: {NLI_KEY} -> output {OUT}")
 os.makedirs(OUT, exist_ok=True)
 
 
@@ -71,7 +80,8 @@ cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
 scores = {}
 for name, feats in CONFIGS.items():
     clf = LogisticRegression(max_iter=1000)
-    scores[name] = cross_val_predict(clf, df[feats], y, cv=cv, method="predict_proba")[:, 1]
+    proba = np.asarray(cross_val_predict(clf, df[feats], y, cv=cv, method="predict_proba"))
+    scores[name] = proba[:, 1]
     df[f"score_{name}"] = scores[name]
 
 
@@ -197,6 +207,19 @@ print("\n=== RQ2: per-condition behaviour at 50% coverage ===")
 print(per[per.coverage == 0.5].pivot(index="config", columns="condition",
                                      values=["abstain_rate", "wrong_answer_rate"]).round(3).to_string())
 
+# ---------- 5b. per source subset (proposal: analyse results per source dataset) ----------
+sub_rows = []
+for subset, g in df.groupby("subset"):
+    idx = g.index.to_numpy()
+    row = {"subset": subset, "n": len(idx), "accuracy": y[idx].mean()}
+    for name in MAIN:
+        row[name] = roc_auc_score(y[idx], scores[name][idx]) if len(set(y[idx])) > 1 else float("nan")
+    row["C4_minus_C2"] = row["C4_conf_suff_nli"] - row["C2_conf_suff"]
+    sub_rows.append(row)
+per_subset = pd.DataFrame(sub_rows)
+per_subset.to_csv(f"{OUT}/per_subset.csv", index=False)
+print("\n=== AUROC per source subset ===")
+print(per_subset.round(3).to_string(index=False))
 # ---------- 6. risk-coverage plot ----------
 plt.figure(figsize=(6, 4))
 for name in MAIN:
