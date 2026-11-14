@@ -127,6 +127,9 @@ All scripts that call models write results line by line and resume after interru
 - Fewer wrong answers with C4 at 75%, 50% and 25% coverage (McNemar p < 0.001).
 - Given the condition label, contradiction adds no further information (R1 vs R2, p = 0.27).
 - Sufficiency autorater vs manual labels: 88% agreement, Cohen's kappa 0.69.
+- LLM judge vs manual grading: 98% agreement, Cohen's kappa 0.96.
+- Robust to NLI threshold (0.2–0.5): C4 − C2 AUROC between +0.100 and +0.136, all CIs exclude 0 (`results/figures/table_sensitivity.csv`).
+- Test suite: 16/16 tests pass (`python -m pytest tests/ -v`).
 
 ## Known limitations
 
@@ -135,6 +138,7 @@ All scripts that call models write results line by line and resume after interru
 - Sentence-level NLI misses edits that are different but not logically contradictory.
 - Single generator model; autorater agreement (kappa 0.69) is below the 93% accuracy reported by Joren et al.
 - The model was accessed via OpenRouter because the OpenAI account was held on the free tier.
+- Original passage always appears first in inconsistent contexts, so position bias and prior knowledge cannot be separated.
 
 ## Data and third-party resources
 
